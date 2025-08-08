@@ -1,0 +1,127 @@
+/*
+ * Newspaper Style CSS for EPUB
+ * Save this as 'style.css' and provide its path via the CSS_FILE env variable.
+ */
+
+/* --- FONT IMPORTS --- */
+/* For a true classic feel, we'd use local fonts. But for broad compatibility in EPUBs,
+   it's safer to rely on common system fonts. These are standard choices. */
+
+/* --- GENERAL BODY & TYPOGRAPHY --- */
+body {
+    font-family: "Georgia", "Times New Roman", serif; /* Classic serif for readability */
+    line-height: 1.6;
+    color: #111; /* Pure black can be harsh, this is a very dark grey */
+    background-color: #fdfdfd; /* A slightly off-white background */
+    margin: 2em;
+    text-align: justify; /* Justified text is a newspaper staple */
+}
+
+/* --- HEADINGS --- */
+/* This creates a clear hierarchy */
+
+/* h1 is for the Feed Title. It acts as a major section break. */
+h1 {
+    font-family: "Helvetica", "Arial", sans-serif; /* A strong, clean sans-serif for contrast */
+    font-size: 2.5em;
+    font-weight: bold;
+    text-align: left;
+    border-bottom: 2px solid #333;
+    padding-bottom: 0.2em;
+    margin-top: 1.5em;
+    margin-bottom: 1em;
+    /* This is a critical property for EPUBs. It suggests to the reader to start this on a new page. */
+    page-break-before: always;
+}
+
+/* h2 is for the Article Title */
+h2 {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 1.8em;
+    font-weight: normal;
+    text-align: left;
+    margin-top: 1em;
+    margin-bottom: 0.2em;
+    line-height: 1.2;
+}
+
+h2 a {
+    color: inherit; /* Make the link color the same as the heading */
+    text-decoration: none; /* No underline on headlines */
+}
+
+/* --- ARTICLE & METADATA --- */
+article {
+    /* A subtle line to separate articles within a feed */
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 2em;
+    margin-bottom: 2em;
+}
+
+/* Don't put a border on the last article in a feed section */
+h1 + article {
+    border-top: none;
+}
+
+article:last-of-type {
+    border-bottom: none;
+}
+
+
+.byline {
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-style: italic;
+    font-size: 0.8em;
+    color: #555;
+    margin-bottom: 1.5em;
+    text-align: left;
+}
+
+/* --- LINKS, IMAGES, and BLOCKQUOTES --- */
+a {
+    color: #005a9c; /* A traditional, muted blue for links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+img {
+    max-width: 100%; /* Ensure images don't overflow the screen */
+    height: auto;
+    display: block;
+    margin: 1em auto; /* Center images */
+    border: 1px solid #ddd;
+    padding: 4px;
+}
+
+blockquote {
+    border-left: 3px solid #ccc;
+    margin-left: 1em;
+    padding-left: 1em;
+    font-style: italic;
+    color: #444;
+}
+
+/* --- TABLE OF CONTENTS (TOC) --- */
+/* Styling the navigation/TOC page */
+nav[epub\:type='toc'] ol {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav[epub\:type='toc'] li {
+    margin-bottom: 0.5em;
+}
+
+nav[epub\:type='toc'] a {
+    text-decoration: none;
+}
+
+/* Style for the nested list of articles under a feed */
+nav[epub\:type='toc'] ol ol {
+    margin-top: 0.5em;
+    margin-left: 1.5em;
+    list-style-type: decimal; /* Number the articles */
+}
