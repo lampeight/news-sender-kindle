@@ -8,6 +8,8 @@ from email.utils import COMMASPACE, formatdate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
 import smtplib
 import morss
 import sys
@@ -39,7 +41,7 @@ MINUTE=int(os.getenv("MINUTES",0))
 ENCRYPTION = os.getenv("ENCRYPTION")
 
 FEED_FILE = '/config/feeds.txt'
-COVER_FILE = '/books-config/cover.png'
+COVER_FILE = '/config/cover.png'
 
 
 feed_file = os.path.expanduser(FEED_FILE)
@@ -115,21 +117,55 @@ def nicepost(post):
     thispost['nicetime'] = nicehour(thispost['time'])
     return thispost
 
+def generate_dynamic_cover(base_cover_path, output_path):
+    # Load image
+    img = Image.open(base_cover_path).convert('RGBA')
+    draw = ImageDraw.Draw(img)
 
-# <link rel="stylesheet" type="text/css" href="style.css">
-html_head = u"""<html>
+    # Build date string
+    today_str = datetime.now().strftime('%A %d %B %Y')
+
+    # Load font (adjust path & size if needed)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 40)
+    except IOError:
+        font = ImageFont.load_default()
+
+    # Measure text size using textbbox (Pillow 8.0+)
+    bbox = draw.textbbox((0, 0), today_str, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+
+    # Position text at the bottom center
+    x = (img.width - text_w) / 2
+    y = img.height - text_h - 250  # 50px from bottom
+
+    # Draw text
+    draw.text((x, y), today_str, font=font, fill="black")
+
+    # Save to output path
+    img.save(output_path)
+
+
+# Load CSS from ./config/style.css
+css_path = Path("./config/style.css")
+if css_path.exists():
+    css_content = css_path.read_text(encoding="utf-8")
+else:
+    css_content = ""  # fallback if file missing
+
+html_head = f"""<html>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width" />
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="apple-mobile-web-app-capable" content="yes" />
 <style>
+{css_content}
 </style>
-<title>THE DAILY NEWS</title>
+<title>THE SANDY TIMES</title>
 </head>
 <body>
-
 """
 
 html_tail = u"""
@@ -198,7 +234,8 @@ def do_one_round():
 
     if posts:
         logging.info("Compiling newspaper")
-
+        temp_cover = '/tmp/cover_with_date.png'
+        generate_dynamic_cover(COVER_FILE, temp_cover)
         result = html_head + \
             u"\n".join([html_perpost.format(**nicepost(post))
                         for post in posts]) + html_tail
@@ -214,17 +251,20 @@ def do_one_round():
                               format="html",
                               outputfile=epubFile,
                               extra_args=["--standalone",
-                                          f"--epub-cover-image={COVER_FILE}",
+                                        #   "--css={css_path}",
+                                          "--toc",
+                                          "--toc-depth=1",
+                                          f"--epub-cover-image={temp_cover}"
                                           ])
         convert_ebook(epubFile, mobiFile)
-        epubFile_2 = str(today_date)+'_news.epub'
+        epubFile_2 = 'The Sandy Times - '+str(today_date)+'.epub'
         convert_ebook(mobiFile, epubFile_2)
 
         logging.info("Sending to kindle email")
         send_mail(send_from=EMAIL_FROM,
                   send_to=[KINDLE_EMAIL],
-                  subject="Daily news - "+str(today_date),
-                  text="This is your daily news.\n\n--\n\n",
+                  subject="The Sandy Times - "+str(today_date),
+                  text="Hot off the press!\n\n--\n\n",
                   files=[epubFile_2])
         logging.info("Cleaning up...")
         os.remove(epubFile)

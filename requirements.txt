@@ -1,5 +1,6 @@
 pytz==2019.3
 tzlocal==5.0.1
-pypandoc==1.4
-feedparser==5.2.1
+pypandoc
+feedparser
 morss
+Pillow
