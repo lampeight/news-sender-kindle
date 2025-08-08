@@ -27,7 +27,7 @@ from FeedparserThread import FeedparserThread
 
 logging.basicConfig(level=logging.INFO)
 
-EPUB_TITLE = os.getcwd("TITLE")
+EPUB_TITLE = os.getenv("TITLE")
 EMAIL_SMTP = os.getenv("EMAIL_SMTP")
 EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT"))
 EMAIL_USER = os.getenv("EMAIL_USER")
